@@ -9,13 +9,11 @@ class HomeFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        // Initialize RecyclerView
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
         postAdapter = PostsAdapter(postList)
         recyclerView.adapter = postAdapter
 
-        // Fetch posts from Firebase
         fetchPostsFromFirebase()
 
         return view
