@@ -1,32 +1,44 @@
-package com.example.mobileapplication11.home
-
-import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import com.example.mobileapplication11.R
-import com.example.mobileapplication11.home.homePosts.HomePostsFragment
-
 class HomeFragment : Fragment() {
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var postAdapter: PostsAdapter
+    private val postList = mutableListOf<Post>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
+        val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        // Initialize RecyclerView
+        recyclerView = view.findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        postAdapter = PostsAdapter(postList)
+        recyclerView.adapter = postAdapter
+
+        // Fetch posts from Firebase
+        fetchPostsFromFirebase()
+
+        return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-//        parentFragmentManager.beginTransaction()
-//            .replace(R.id.homePlaceHolder,HomePostsFragment.newInstance())
-//            .commit()
-    }
+    private fun fetchPostsFromFirebase() {
+        val database = FirebaseDatabase.getInstance().getReference("posts")
 
-    companion object {
-       @JvmStatic
-        fun newInstance() = HomeFragment()
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                postList.clear()
+                for (postSnapshot in snapshot.children) {
+                    val post = postSnapshot.getValue(Post::class.java)
+                    if (post != null) {
+                        postList.add(post)
+                    }
+                }
+                postAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "ver daiposta: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
